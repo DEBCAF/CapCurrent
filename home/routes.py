@@ -1,17 +1,23 @@
-from flask import render_template, url_for, flash, redirect, request, abort, session
+from flask import render_template, url_for, flash, redirect, request, abort, session, send_file, make_response, Response
 from home import app, db, bcrypt, mail
 from home.db_models import User, SavingChanges, Goal, Group, GroupMember, GroupGoal, GroupTransaction, GroupJoinRequest, UserPreference, GroupPreference
 from home.forms import RegistrationForm, LoginForm, UpdateAccountForm, UpdateGoalForm, GoalForm, RequestResetForm, ResetPasswordForm, ChangePasswordForm, UpdateSavingsForm, CreateGroupForm, JoinGroupForm, GroupGoalForm, GroupTransactionForm, AdjustSavingsForm, UserPreferencesForm, GroupPreferencesForm
 from home.analysis import analyse_group, rate_per_day, estimate_eta, rate_breakdown, required_rate, analyse_user, user_transactions_as_movements, group_transactions_as_movements
 from PIL import Image 
 import secrets
-import os
+import os, io
 from flask_login import login_user, current_user, logout_user, login_required
 from flask_mail import Message
-from datetime import datetime
+from datetime import datetime, timezone
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField, BooleanField, SelectField, IntegerField, TextAreaField, FloatField
 from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError, NumberRange, Optional
+import matplotlib 
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+
+def utc_now():
+    return datetime.now(timezone.utc)
 
 @app.template_filter('timestamp_to_date')
 def timestamp_to_date(timestamp):
@@ -655,13 +661,13 @@ def approve_group_goal(group_id, goal_id):
             description=f"Goal approved: {goal.title}",
             status='approved',
             approved_by_id=current_user.id,
-            approved_at=datetime.utcnow()
+            approved_at=utc_now()
         )
         db.session.add(transaction)
         
         goal.status = 'approved'
         goal.approved_by_id = current_user.id
-        goal.approved_at = datetime.utcnow()
+        goal.approved_at = utc_now()
         
         group.balance -= goal.target_amount
         
@@ -694,7 +700,7 @@ def deny_group_goal(group_id, goal_id):
     
     goal.status = 'denied'
     goal.approved_by_id = current_user.id
-    goal.approved_at = datetime.utcnow()
+    goal.approved_at = utc_now()
     db.session.commit()
     
     flash('Goal denied.', 'info')
@@ -789,7 +795,7 @@ def new_group_transaction(group_id):
         
         if is_admin:
             transaction.approved_by_id = current_user.id
-            transaction.approved_at = datetime.utcnow()
+            transaction.approved_at = utc_now()
             group.balance += form.amount.data
         
         db.session.add(transaction)
@@ -826,7 +832,7 @@ def approve_group_transaction(group_id, transaction_id):
         
         transaction.status = 'approved'
         transaction.approved_by_id = current_user.id
-        transaction.approved_at = datetime.utcnow()
+        transaction.approved_at = utc_now()
         
         db.session.commit()
         flash('Transaction approved successfully!', 'success')
@@ -855,7 +861,7 @@ def deny_group_transaction(group_id, transaction_id):
     
     transaction.status = 'denied'
     transaction.approved_by_id = current_user.id
-    transaction.approved_at = datetime.utcnow()
+    transaction.approved_at = utc_now()
     db.session.commit()
     
     flash('Transaction denied.', 'info')
@@ -1049,7 +1055,7 @@ def approve_join_request(group_id, request_id):
         
         if existing_member:
             existing_member.is_active = True
-            existing_member.joined_at = datetime.utcnow()
+            existing_member.joined_at = utc_now()
         else:
             new_member = GroupMember(
                 group_id=group_id,
@@ -1059,7 +1065,7 @@ def approve_join_request(group_id, request_id):
             db.session.add(new_member)
         
         join_request.status = 'approved'
-        join_request.responded_at = datetime.utcnow()
+        join_request.responded_at = utc_now()
         join_request.responded_by_id = current_user.id
         db.session.commit()
         
@@ -1091,7 +1097,7 @@ def deny_join_request(group_id, request_id):
         abort(404)
     
     join_request.status = 'denied'
-    join_request.responded_at = datetime.utcnow()
+    join_request.responded_at = utc_now()
     join_request.responded_by_id = current_user.id
     db.session.commit()
     
@@ -1132,7 +1138,7 @@ def group_preferences(group_id):
             preferences.default_currency = form.default_currency.data
             preferences.require_goal_approval = form.require_goal_approval.data
             preferences.require_transaction_approval = form.require_transaction_approval.data
-            preferences.updated_at = datetime.utcnow()
+            preferences.updated_at = utc_now()
             
             db.session.commit()
             flash('Group preferences have been updated!', 'success')

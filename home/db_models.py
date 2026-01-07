@@ -1,9 +1,12 @@
 from fsspec.registry import default
 from sqlalchemy import CheckConstraint
 from home import db, login_manager, app
-from datetime import datetime
+from datetime import datetime, timezone
 from flask_login import UserMixin
 from itsdangerous import URLSafeTimedSerializer
+
+def utc_now():
+    return datetime.now(timezone.utc)
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -44,7 +47,7 @@ class User(db.Model, UserMixin):
 class SavingChanges(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     amount = db.Column(db.Float, nullable=False)
-    date_time = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    date_time = db.Column(db.DateTime(timezone=True), nullable=False, default=utc_now)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     
     user = db.relationship('User', backref='saving_changes')
@@ -55,7 +58,7 @@ class SavingChanges(db.Model):
 class Goal(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100), nullable=False)
-    date_time = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    date_time = db.Column(db.DateTime(timezone=True), nullable=False, default=utc_now)
     description = db.Column(db.Text, nullable=False)
     url = db.Column(db.String(100), nullable=True)
     target_amount = db.Column(db.Float, nullable=False)
@@ -75,8 +78,8 @@ class UserPreference(db.Model):
     notifications_enabled = db.Column(db.Boolean, nullable=False, default=True)
     email_notifications = db.Column(db.Boolean, nullable=False, default=True)
     default_currency = db.Column(db.String(10), nullable=False, default='USD')
-    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = db.Column(db.DateTime(timezone=True), nullable=False, default=utc_now)
+    updated_at = db.Column(db.DateTime(timezone=True), nullable=False, default=utc_now, onupdate=utc_now)
     
     user = db.relationship('User', backref='preferences')
     
@@ -87,7 +90,7 @@ class Group(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     description = db.Column(db.Text, nullable=True)
-    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime(timezone=True), nullable=False, default=utc_now)
     currency = db.Column(db.String(10), nullable=False, default='USD')
     is_active = db.Column(db.Boolean, nullable=False, default=True)
     is_open = db.Column(db.Boolean, nullable=False, default=True)
@@ -118,7 +121,7 @@ class GroupMember(db.Model):
     group_id = db.Column(db.Integer, db.ForeignKey('group.id'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     role = db.Column(db.String(20), nullable=False, default='member')  
-    joined_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    joined_at = db.Column(db.DateTime(timezone=True), nullable=False, default=utc_now)
     is_active = db.Column(db.Boolean, nullable=False, default=True)
     
     __table_args__ = (
@@ -143,8 +146,8 @@ class GroupGoal(db.Model):
     status = db.Column(db.String(20), nullable=False, default='proposed')  
     proposer_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     approved_by_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
-    approved_at = db.Column(db.DateTime, nullable=True)
-    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    approved_at = db.Column(db.DateTime(timezone=True), nullable=True)
+    created_at = db.Column(db.DateTime(timezone=True), nullable=False, default=utc_now)
     
     proposer = db.relationship('User', foreign_keys=[proposer_id], backref='proposed_goals')
     approved_by = db.relationship('User', foreign_keys=[approved_by_id], backref='approved_goals')
@@ -162,10 +165,10 @@ class GroupTransaction(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     amount = db.Column(db.Float, nullable=False)
     description = db.Column(db.Text, nullable=True)
-    occurred_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    occurred_at = db.Column(db.DateTime(timezone=True), nullable=False, default=utc_now)
     status = db.Column(db.String(20), nullable=False, default='pending')  
     approved_by_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
-    approved_at = db.Column(db.DateTime, nullable=True)
+    approved_at = db.Column(db.DateTime(timezone=True), nullable=True)
     
     user = db.relationship('User', foreign_keys=[user_id], backref='group_transactions')
     approved_by = db.relationship('User', foreign_keys=[approved_by_id], backref='approved_transactions')
@@ -199,8 +202,8 @@ class GroupJoinRequest(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     status = db.Column(db.String(20), nullable=False, default='pending')  
     message = db.Column(db.Text, nullable=True)  
-    requested_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-    responded_at = db.Column(db.DateTime, nullable=True)
+    requested_at = db.Column(db.DateTime(timezone=True), nullable=False, default=utc_now)
+    responded_at = db.Column(db.DateTime(timezone=True), nullable=True)
     responded_by_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
     
     user = db.relationship('User', foreign_keys=[user_id], backref='join_requests')
@@ -222,8 +225,8 @@ class GroupPreference(db.Model):
     default_currency = db.Column(db.String(10), nullable=False, default='USD')
     require_goal_approval = db.Column(db.Boolean, nullable=False, default=True)
     require_transaction_approval = db.Column(db.Boolean, nullable=False, default=True)
-    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = db.Column(db.DateTime(timezone=True), nullable=False, default=utc_now)
+    updated_at = db.Column(db.DateTime(timezone=True), nullable=False, default=utc_now, onupdate=utc_now)
     
     group = db.relationship('Group', backref='preferences')
     
