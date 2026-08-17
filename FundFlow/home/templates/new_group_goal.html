@@ -1,0 +1,80 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="content-section">
+    <h1 class="mb-4">{{ title }}</h1>
+    <div class="card mb-3">
+        <div class="card-header">
+            <h2 class="mb-0">{{ group.name }}</h2>
+        </div>
+        <div class="card-body">
+            <form method="POST" action="">
+                {{ form.hidden_tag() }}
+                <fieldset class="form-group">
+                    <!-- input field for goal title -->
+                    <div class="form-group mb-3">
+                        {{ form.title.label(class="form-control-label") }}
+                        {% if form.title.errors %}
+                            {{ form.title(class="form-control form-control-lg is-invalid") }}
+                            <div class="invalid-feedback">
+                                {% for error in form.title.errors %}
+                                    <div class="alert alert-danger">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            {{ form.title(class="form-control form-control-lg") }}
+                        {% endif %}
+                    </div>
+                    <!-- input field for goal description -->
+                    <div class="form-group mb-3">
+                        {{ form.description.label(class="form-control-label") }}
+                        {% if form.description.errors %}
+                            {{ form.description(class="form-control form-control-lg is-invalid") }}
+                            <div class="invalid-feedback">
+                                {% for error in form.description.errors %}
+                                    <div class="alert alert-danger">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            {{ form.description(class="form-control form-control-lg") }}
+                        {% endif %}
+                    </div>
+                    <!-- input field for target amount -->
+                    <div class="form-group mb-3">
+                        {{ form.target_amount.label(class="form-control-label") }}
+                        {% if form.target_amount.errors %}
+                            {{ form.target_amount(class="form-control form-control-lg is-invalid") }}
+                            <div class="invalid-feedback">
+                                {% for error in form.target_amount.errors %}
+                                    <div class="alert alert-danger">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            {{ form.target_amount(class="form-control form-control-lg") }}
+                        {% endif %}
+                    </div>
+                    <!-- input field for deadline -->
+                    <div class="form-group mb-3">
+                        {{ form.deadline.label(class="form-control-label") }}
+                        {% if form.deadline.errors %}
+                            {{ form.deadline(class="form-control form-control-lg is-invalid") }}
+                            <div class="invalid-feedback">
+                                {% for error in form.deadline.errors %}
+                                    <div class="alert alert-danger">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            {{ form.deadline(class="form-control form-control-lg") }}
+                        {% endif %}
+                    </div>
+                </fieldset>
+                <!-- buttons to submit or cancel -->
+                <div class="form-group">
+                    {{ form.submit(class="btn") }}
+                    <a href="{{ url_for('view_group_goals', group_id=group.id) }}" class="btn">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

@@ -1,0 +1,54 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="content-section">
+    <h1 class="mb-4">{{ group.name }} - Join Requests</h1>
+    {% if pending_requests %}
+        <div class="card">
+            <div class="card-header">
+                <h2 class="mb-0">Pending Requests ({{ pending_requests|length }})</h2>
+            </div>
+            <div class="card-body">
+                {% for request in pending_requests %}
+                    <div class="border rounded p-3 mb-3">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <!-- displaying the request information -->
+                            <div class="flex-grow-1 me-3">
+                                <h3 class="mb-1">{{ request.user.username }}</h3>
+                                {% if request.message %}
+                                    <p class="mb-2 text-muted">{{ request.message }}</p>
+                                {% endif %}
+                                <small class="text-muted">Requested {{ request.requested_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                            </div>
+                            <div class="flex-shrink-0">
+                                <!-- buttons to approve or deny the request -->
+                                <div class="d-flex gap-2">
+                                    <form method="POST" action="{{ url_for('approve_join_request', group_id=group.id, request_id=request.id) }}" style="display: inline;">
+                                        <button type="submit" class="btn btn-success">Approve</button>
+                                    </form>
+                                    <form method="POST" action="{{ url_for('deny_join_request', group_id=group.id, request_id=request.id) }}" style="display: inline;">
+                                        <button type="submit" class="btn btn-danger">Deny</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% else %}
+        <div class="card">
+            <!-- display this message if there are no requests -->
+            <div class="card-body text-center">
+                <h3>No pending join requests</h3>
+                <p class="text-muted">All join requests have been processed.</p>
+            </div>
+        </div>
+    {% endif %}
+    
+    <div class="text-center mt-4">
+        <a href="{{ url_for('group_detail', group_id=group.id) }}" class="btn btn-outline-primary">Back to Group</a>
+    </div>
+</div>
+{% endblock %}
+
+

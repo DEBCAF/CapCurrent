@@ -1,0 +1,20 @@
+{% extends "layout.html" %}
+{% block content %}
+    <div class="content-section">
+        <div class="media">
+            <!-- profile picture -->
+            <img class="account-img" src="{{ image_file }}">
+            <!-- displaying user information -->
+            <div class="media-body">
+                <h2>{{ current_user.username }}</h2>
+                <p>{{ current_user.email }}</p>
+            </div>
+        </div> 
+    </div>
+    <div class="mt-3">
+        <a class="btn" href="{{ url_for('update_account') }}">Update Account Info</a>
+        <a class="btn" href="{{ url_for('change_password') }}">Change Password</a>
+        <a class="btn" href="{{ url_for('user_preferences') }}">User Preferences</a>
+    </div>
+{% endblock %}
+

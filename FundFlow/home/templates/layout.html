@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% if title %}FundFlow - {{ title }}{% else %}FundFlow{% endif %}</title> <!-- title changes based on page the user is on -->
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='main.css') }}"> <!-- adding the CSS file for styling -->
+</head>
+<body class="{{ session.get('theme', 'light') }}-theme">
+    <div class="container">
+        <nav class="navbar">
+            <!-- displays a clickable logo -->
+            <a href="{{ '/dashboard' if current_user.is_authenticated else '/' }}">
+                <img src="{{ url_for('static', filename='profile_pics/logo.jpg') }}" class="rounded-circle account-img">
+            </a>
+            <a {%if current_user.is_authenticated%} href="/dashboard" {% else %} href="/" {% endif %}>FundFlow</a> 
+            {% if current_user.is_authenticated %} <!-- checks if user is logged in -->
+                <!-- these buttons will show if user is logged in -->
+                <a href="/goals">Goals</a> <!-- link to the goals page -->
+                <div class="dropdown-container">
+                    <a href="/groups" class="dropdown-toggle">Groups</a> <!-- link to the groups page -->
+                    {% if user_groups %} <!-- checks if user has any groups -->
+                        <div class="dropdown-menu">
+                            {% for group in user_groups %}
+                                <a href="/groups/{{ group.id }}" class="dropdown-item">{{ group.name }}</a>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                <a href="/account">Account</a> <!-- link to the account page -->
+                <a href="/logout">Logout</a> <!-- link to log out the user -->
+            {% else %}
+                <!-- these buttons will show if user is not logged in -->
+                <a href="/login">Login</a> <!-- link to the login page -->
+                <a href="/register">Register</a> <!-- link to the registration page -->
+            {% endif %}
+        </nav>
+        <main class="content"> 
+            <!-- displays any flash messages when they occur (deduplicated to avoid duplicates) -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            
+            {% block content %}{% endblock %}
+        </main>
+
+        <!-- condition checked in init file -->
+        {% if show_group_sidebar %}
+        <aside class="group-sidebar">
+            <div class="group-sidebar-inner">
+                <h3>Group Navigation</h3>
+                <div class="group-buttons">
+                    {% if current_group_id %}
+                        <a href="/groups/{{ current_group_id }}" class="group-btn">Overview</a>
+                        <a href="/groups/{{ current_group_id }}/members" class="group-btn">Members</a>
+                        <a href="/groups/{{ current_group_id }}/goals" class="group-btn">Goals</a>
+                        <a href="/groups/{{ current_group_id }}/transactions" class="group-btn">Transactions</a>
+                        <a href="/groups/{{ current_group_id }}/join-requests" class="group-btn">Join Requests</a>
+                        <a href="/groups/{{ current_group_id }}/update" class="group-btn">Settings</a>
+                    {% else %}
+                        <p>no group selected</p>
+                    {% endif %}
+                </div>
+            </div>
+        </aside>
+        {% endif %}
+    </div>
+</body>
+</html>
+
+
+
+

@@ -1,0 +1,125 @@
+{% extends "layout.html" %}
+{% block content %}
+    <article class="media">
+        <!-- profile picture of user -->
+        <img class="profile-img-small" src="{{ url_for('static', filename='profile_pics/' + goal.owner.image_file) }}">
+        <div class="media-body">
+            <!-- information about goal -->
+            <div>
+                <small>Created by: {{ goal.owner.username }}</small>
+                <small> {{ goal.date_time.strftime('%Y-%m-%d') }}</small>
+            </div>
+            <h2>{{ goal.title }}</h2>
+            <p>{{ goal.description }}</p>
+            <div>
+                <p><strong>Target Amount:</strong> ${{ '%.2f'|format(goal.target_amount) }}</p>
+                {% if goal.deadline %}
+                    <p><strong>Deadline:</strong> {{ goal.deadline.strftime('%Y-%m-%d') }}</p>
+                {% endif %}
+                {% if goal.category %}
+                    <p><strong>Category:</strong> {{ goal.category.title() }}</p>
+                {% endif %}
+                <p><strong>Status:</strong> {{ goal.status.title() }}</p>
+                
+                <!-- Progress bar for goal -->
+                {% if goal.status == 'active' %}
+                    {% set progress_decimal = (current_user.savings / goal.target_amount) if goal.target_amount > 0 else 0 %}
+                    {% set progress_percent = [progress_decimal * 100, 100]|min %}
+                    <div>
+                        <div class="progress" style="height: 25px;">
+                            <div class="progress-bar" role="progressbar" style="width: {{ progress_percent }}%;" aria-valuenow="{{ progress_percent }}" aria-valuemin="0" aria-valuemax="100">
+                                {{ '%.1f'|format(progress_percent) }}%
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+            <!-- allows goal to be completed based on goal status and user savings balance --> 
+            <div class="mt-4">
+                {% if goal.status != 'completed' and goal.user_id == current_user.id %}
+                {% elif goal.status == 'completed' %}
+                    <div class="alert alert-success">
+                        <h4>Goal Completed</h4>
+                        <p>This goal was completed on {{ goal.date_time.strftime('%Y-%m-%d') }}</p>
+                    </div>
+                {% elif current_user.savings < goal.target_amount and goal.user_id == current_user.id %}
+                    <div class="alert alert-warning">
+                        <h4>Insufficient Funds</h4>
+                    </div>
+                {% endif %}
+                {% if goal.status != 'completed' %}
+                    <div class="mt-2 p-2 bg-light rounded">
+                        <div class="row mt-1">
+                            <div class="col-6">
+                                {% set goal_analytics = analytics.get(goal.id) %}
+                                {% if current_user.savings >= goal.target_amount %}
+                                    <div class="alert alert-success py-2">Ready to complete! You have sufficient savings.</div>
+                                    <form method="POST" action="{{ url_for('complete_goal', goal_id=goal.id) }}" style="display: inline;"> <!-- form to complete the goal -->
+                                        <button type="submit" class="btn mb-3">Complete & Spend ${{ '%.2f'|format(goal.target_amount) }}</button> <!-- button to complete the goal and spend the target amount -->
+                                    </form>
+                                {% elif not goal_analytics %}
+                                    <div class="alert alert-secondary py-2">No analytics available for this goal yet.</div>
+                                {% else %}
+                                    <div class="row gx-3 gy-2">
+                                        <div class="col-md-6">
+                                            <div class="card p-2 h-100">
+                                                <h3>Analytics:</h3>
+                                                <div class="small text-muted">Remaining</div>
+                                                <div class="fw-bold">${{ '%.2f'|format(goal_analytics.remaining) }}</div>
+                                                <div class="small text-muted mt-2">Current Savings</div>
+                                                <div>${{ '%.2f'|format(current_user.savings or 0) }}</div>
+                                                {% if goal.deadline %}
+                                                    {% if not goal_analytics.deadline_passed %}
+                                                        <div class="small text-muted">Required Daily (until {{ goal.deadline.strftime('%Y-%m-%d %H:%M') }})</div>
+                                                    {% else %}
+                                                        <div class="small text-muted">Deadline Passed</div>
+                                                    {% endif %}
+                                                {% else %}
+                                                    <div class="small text-muted">Required Daily (30 days default)</div>
+                                                {% endif %}
+                                                <div class="small text-muted">
+                                                    {% if goal_analytics.required_daily %}
+                                                        ${{ '%.2f'|format(goal_analytics.required_daily) }}
+                                                    {% else %}
+                                                        Error loading required rate
+                                                    {% endif %}
+                                                </div>
+                                                <div class="small text-muted mt-2">Current Rate</div>
+                                                <div>
+                                                    {% if goal_analytics.rate_per_day %}
+                                                        ${{ '%.2f'|format(goal_analytics.rate_per_day) }} / day
+                                                    {% else %}
+                                                        <span class="text-warning">Not enough data</span>
+                                                    {% endif %}
+                                                </div>
+                                                <div class="small text-muted mt-2">ETA</div>
+                                                <div>
+                                                    {% if goal_analytics.eta_ts %}
+                                                        {{ goal_analytics.eta_ts }}
+                                                    {% else %}
+                                                        <span class="text-warning">Cannott generate ETA</span>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                <!-- edit and delete buttons -->
+                {% if goal.user_id == current_user.id and goal.status != 'completed' %}
+                    <div>
+                        <a class="btn btn-secondary" href="{{ url_for('update_goal', goal_id=goal.id) }}">Edit Goal</a>
+                        <form method="POST" action="{{ url_for('delete_goal', goal_id=goal.id) }}" style="display: inline;">
+                            <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this goal?')">Delete Goal</button>
+                        </form>
+                        <a href="{{ url_for('goals') }}" class="btn btn-outline-primary">Back to Goals</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </article>
+{% endblock %}
+

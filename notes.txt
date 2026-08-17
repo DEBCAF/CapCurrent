@@ -1,2 +1,0 @@
-Create goal database values to be input from forms 
-change so that goals are seen in goals tab instead 

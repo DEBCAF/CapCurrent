@@ -1,0 +1,128 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="content-section group-goals">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="mb-0">All Group Goals</h1>
+        <!-- creating group goal button -->
+        <div class="floating-create-goal">
+            <a href="{{ url_for('new_group_goal', group_id=group_id) }}" class="btn btn-primary">Propose Goal</a>
+        </div>
+        <!-- Dropdown to filter goals by status -->
+        <form method="get" action="{{ url_for('view_group_goals', group_id=group_id, status=active_tab, page=page_num) }}" class="d-flex align-items-center gap-2">
+            <select name="status" class="form-control" style="width: auto;">
+                <option value="all" {% if active_tab == 'all' %}selected{% endif %}>All Goals</option>
+                <option value="proposed" {% if active_tab == 'proposed' %}selected{% endif %}>Proposed Goals</option>
+                <option value="approved" {% if active_tab == 'approved' %}selected{% endif %}>Approved Goals</option>
+                <option value="denied" {% if active_tab == 'denied' %}selected{% endif %}>Denied Goals</option>
+            </select>
+            <button type="submit" class="btn btn-outline-primary">Filter</button>
+        </form>
+    </div>
+    </div>
+    
+    <!-- displaying all goals -->
+    {% if goals.items %}
+        {% for goal in goals.items %}
+            <!-- displaying different information based on type of goal -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <article class="media content-section {% if goal.status == 'approved' %}border-success bg-light{% endif %} mt-3 mb-3">
+                                <div class="media-body">
+                                    <div class="article-metadata">
+                                        <small class="text-muted">Created: {{ goal.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                                        <span class="badge ms-2 {% if goal.status == 'approved' %}bg-success{% elif goal.status == 'proposed' %}bg-info{% elif goal.status == 'denied' %}bg-danger{% else %}bg-secondary{% endif %}">
+                                            {{ goal.status.title() }}
+                                        </span>
+                                    </div>
+                                    <h2><a class="article-title" href="{{ url_for('group_goal', group_id=group.id, goal_id=goal.id) }}">{{ goal.title }}</a></h2>
+                                    <p class="article-content">{{ goal.description }}</p>
+                                    
+                                    <div class="mt-2">
+                                        <small class="text-muted">Target: ${{ '%.2f'|format(goal.target_amount) }}</small>
+                                        {% if goal.deadline %}
+                                            <small class="text-muted ml-3">Deadline: {{ goal.deadline.strftime('%Y-%m-%d %H:%M') }}</small>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <!-- progress bar for group goal -->
+                                    {% set analytics = analyse_group(group, [goal], group.balance) %}
+                                    {% set goal_analytics = analytics.get(goal.id) %}
+                                    {% set progress_percent = [goal_analytics.progress_percent, 100]|min %}
+                                    {% if goal_analytics %}
+                                        {% if goal.status == 'proposed' %}
+                                            <div class="mt-2">
+                                                <div class="progress" style="height: 20px;">
+                                                    <div class="progress-bar" role="progressbar" style="width: {{ progress_percent }}%;" aria-valuenow="{{ progress_percent }}" aria-valuemin="0" aria-valuemax="100">
+                                                        {{ '%.1f'|format(progress_percent) }}%
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        {% endif %}
+                                    {% endif %}
+                                </div>
+                            </article>
+                            <div class="mt-4">
+                                {% if goal.status == 'proposed' %}
+                                    {% if member.role == 'admin' %}
+                                        {% if goal.target_amount <= group.balance %}
+                                            <form method="POST" action="{{ url_for('approve_group_goal', group_id=group.id, goal_id=goal.id) }}" style="display:inline;">
+                                                <button type="submit" class="btn btn-success btn-sm">Approve</button>
+                                            </form>
+                                        {% endif %}
+                                        <form method="POST" action="{{ url_for('deny_group_goal', group_id=group.id, goal_id=goal.id) }}" style="display:inline;">
+                                            <button type="submit" class="btn btn-danger btn-sm">Deny</button>
+                                        </form>
+                                    {% else %}
+                                        <span class="text-muted">Waiting for admin approval</span>
+                                    {% endif %}
+                                {% endif %}
+                            </div>
+                            <div class="mt-4">
+                                {% if goal.status == 'proposed' %}
+                                    {% if member.id == goal.proposer_id %}
+                                        <a href="{{ url_for('update_group_goal', group_id=group_id, goal_id=goal.id) }}" class="btn btn-primary">Edit</a>
+                                    {% endif %}
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+        <!-- pagination controls -->
+        <div class="text-center my-4">
+            {% for page_num in goals.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+                {% if page_num %}
+                    {% if goals.page == page_num %}
+                        <a class="btn btn-primary mx-1" href="{{ url_for('view_group_goals', group_id=group_id, status=active_tab, page=page_num) }}">{{ page_num }}</a> 
+                    {% else %}    
+                        <a class="btn btn-outline-primary mx-1" href="{{ url_for('view_group_goals', group_id=group_id, status=active_tab, page=page_num) }}">{{ page_num }}</a> 
+                    {% endif %}
+                {% else %}
+                    <span class="mx-2">&hellip;</span>
+                {% endif %}
+            {% endfor %}
+        </div>
+    {% else %}
+        <!-- message when there are no goals -->
+        <div class="text-center py-5">
+            {% if active_tab == 'all' %}
+                <h3>No goals yet</h3>
+                <p class="text-muted">Start by proposing a goal</p>
+                <a href="{{ url_for('new_group_goal', group_id=group_id) }}" class="btn btn-primary">Propose Goal</a>
+            {% elif active_tab == 'proposed' %}
+                <h3>No proposed goals yet</h3>
+                <p class="text-muted">Start by proposing a goal</p>
+                <a href="{{ url_for('new_group_goal', group_id=group_id) }}" class="btn btn-primary">Propose Goal</a>
+            {% elif active_tab == 'approved' %}
+                <h3>No approved goals yet</h3>
+                <p class="text-muted">No goals have been approved to see them here.</p>
+            {% elif active_tab == 'denied' %}
+                <h3>No denied goals yet</h3>
+                <p class="text-muted">No goals have been denied to see them here.</p>
+            {% endif %}
+        </div>
+    {% endif %}
+{% endblock %}

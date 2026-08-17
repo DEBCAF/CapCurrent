@@ -1,0 +1,63 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="content-section">
+    <h1 class="mb-4">New Group Transaction</h1>
+    <div class="card mb-3">
+        <div class="card-header">
+            <h2 class="mb-0">{{ group.name }}</h2>
+        </div>
+        <div class="card-body">
+            <form method="POST" action="">
+                {{ form.hidden_tag() }}
+                <fieldset class="form-group">
+                    <!-- input field for transaction amount -->
+                    <div class="form-group mb-3">
+                        {{ form.amount.label(class="form-control-label") }}
+                        {% if form.amount.errors %}
+                            {{ form.amount(class="form-control form-control-lg is-invalid") }}
+                            <div class="invalid-feedback">
+                                {% for error in form.amount.errors %}
+                                    <div class="alert alert-danger">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            {{ form.amount(class="form-control form-control-lg") }}
+                        {% endif %}
+                    </div>
+                    <!-- input field for transaction description -->    
+                    <div class="form-group mb-3">
+                        {{ form.description.label(class="form-control-label") }}
+                        {% if form.description.errors %}
+                            {{ form.description(class="form-control form-control-lg is-invalid") }}
+                            <div class="invalid-feedback">
+                                {% for error in form.description.errors %}
+                                    <div class="alert alert-danger">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            {{ form.description(class="form-control form-control-lg") }}
+                        {% endif %}
+                    </div>
+                </fieldset>
+                <!-- explain to users the different scenarios depending on role -->
+                {% if member.role == 'admin' %}
+                    <div class="alert alert-info">
+                        <strong>Admin Transaction:</strong> This transaction will be automatically approved.
+                    </div>
+                {% else %}
+                    <div class="alert alert-warning">
+                        <strong>Member Transaction:</strong> This transaction requires admin approval.
+                    </div>
+                {% endif %}
+                <!-- submit and cancel buttons -->
+                <div class="form-group">
+                    {{ form.submit(class="btn btn-primary") }}
+                    <a href="{{ url_for('view_group_transactions', group_id=group.id) }}" class="btn btn-outline-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+

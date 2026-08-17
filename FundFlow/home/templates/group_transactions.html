@@ -1,0 +1,77 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="content-section group-transactions">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="mb-0">All Group Transactions</h1>
+        <!-- creating group transaction button, reusing same position as goals -->
+        <div class="floating-create-goal">
+            <a href="{{ url_for('new_group_transaction', group_id=group_id) }}" class="btn btn-primary">New Transaction</a>
+        </div>
+        <form method="get" action="{{ url_for('view_group_transactions', group_id=group_id, status=active_tab, page=page_num) }}" class="d-flex align-items-center gap-2">
+            <select name="status" class="form-control" style="width: auto;">
+                <option value="all" {% if active_tab == 'all' %}selected{% endif %}>All</option>
+                <option value="pending" {% if active_tab == 'pending' %}selected{% endif %}>Pending</option>
+                <option value="approved" {% if active_tab == 'approved' %}selected{% endif %}>Approved</option>
+                <option value="denied" {% if active_tab == 'denied' %}selected{% endif %}>Denied</option>
+            </select>
+            <button type="submit" class="btn btn-outline-primary">Filter</button>
+        </form>
+    </div>
+
+    <!-- displaying all transactions -->
+    {% if transactions.items %}
+        {% for tx in transactions.items %}
+            <!-- displaying transaction information -->
+            <div class="card mb-3">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <div class="text-muted">Created: {{ tx.occurred_at.strftime('%Y-%m-%d %H:%M') }}</div>
+                            <h4><a href="{{ url_for('group_transaction', group_id=group.id, transaction_id=tx.id) }}">{{ tx.description }}</a></h4>
+                            <div class="small text-muted">By: {{ tx.user.username }}</div>
+                        </div>
+                        <div class="text-end">
+                            <div class="fw-bold">{{ group.currency }} {{ '%.2f'|format(tx.amount) }}</div>
+                            <div class="badge {% if tx.status == 'approved' %}bg-success{% elif tx.status == 'pending' %}bg-info{% elif tx.status == 'denied' %}bg-danger{% else %}bg-secondary{% endif %}">{{ tx.status.title() }}</div>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        {% if tx.status == 'pending' %}
+                            {% if member.role == 'admin' %}
+                                <form method="POST" action="{{ url_for('approve_group_transaction', group_id=group.id, transaction_id=tx.id) }}" style="display:inline;">
+                                    <button type="submit" class="btn btn-success btn-sm">Approve</button>
+                                </form>
+                                <form method="POST" action="{{ url_for('deny_group_transaction', group_id=group.id, transaction_id=tx.id) }}" style="display:inline;">
+                                    <button type="submit" class="btn btn-danger btn-sm">Deny</button>
+                                </form>
+                            {% else %}
+                                <span class="text-muted">Waiting for admin approval</span>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+        
+        <!-- pagination controls -->
+        <div class="text-center my-4">
+            {% for page_num in transactions.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+                {% if page_num %}
+                    {% if transactions.page == page_num %}
+                        <a class="btn btn-primary mx-1" href="{{ url_for('view_group_transactions', group_id=group_id, status=active_tab, page=page_num) }}">{{ page_num }}</a>
+                    {% else %}
+                        <a class="btn btn-outline-primary mx-1" href="{{ url_for('view_group_transactions', group_id=group_id, status=active_tab, page=page_num) }}">{{ page_num }}</a>
+                    {% endif %}
+                {% else %}
+                    <span class="mx-2">&hellip;</span>
+                {% endif %}
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="text-center py-5">
+            <h3>No transactions yet</h3>
+            <p class="text-muted">Add a transaction to change the group's balance.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,73 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="content-section">
+    <form method="POST" action="">
+        {{ form.hidden_tag() }}
+        <fieldset class="form-group">
+            <legend>{{ legend }}</legend>
+            <!-- field for goal title -->
+            <div class="form-group">
+                {{ form.title.label(class="form-control-label") }}
+                {% if form.title.errors %}
+                    {{ form.title(class="form-control form-control-lg is-invalid") }}
+                    <div class="invalid-feedback">
+                        {% for error in form.title.errors %}
+                            <div class="alert alert-danger">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    {{ form.title(class="form-control form-control-lg") }}
+                {% endif %}
+            </div>
+            <!-- field for goal description -->
+            <div class="form-group">
+                {{ form.description.label(class="form-control-label") }}
+                {% if form.description.errors %}
+                    {{ form.description(class="form-control form-control-lg is-invalid") }}
+                    <div class="invalid-feedback">
+                        {% for error in form.description.errors %}
+                            <div class="alert alert-danger">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    {{ form.description(class="form-control form-control-lg") }}
+                {% endif %}
+            </div>
+            <!-- field for target amount -->
+            <div class="form-group">
+                {{ form.target_amount.label(class="form-control-label") }}
+                {% if form.target_amount.errors %}
+                    {{ form.target_amount(class="form-control form-control-lg is-invalid") }}
+                    <div class="invalid-feedback">
+                        {% for error in form.target_amount.errors %}
+                            <div class="alert alert-danger">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    {{ form.target_amount(class="form-control form-control-lg") }}
+                {% endif %}
+            </div>
+            <!-- field for deadline -->
+            <div class="form-group">
+                {{ form.deadline.label(class="form-control-label") }}
+                {% if form.deadline.errors %}
+                    {{ form.deadline(class="form-control form-control-lg is-invalid") }}
+                    <div class="invalid-feedback">
+                        {% for error in form.deadline.errors %}
+                            <div class="alert alert-danger">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    {{ form.deadline(class="form-control form-control-lg") }}
+                {% endif %}
+            </div>
+        </fieldset>
+        <!-- submit button -->
+        <div class="form-group">
+            {{ form.submit(class="btn") }}
+            <a class="btn" href="{{ url_for('goals') }}">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
+

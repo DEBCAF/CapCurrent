@@ -1,0 +1,69 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="content-section">
+    <h1 class="mb-4">Join a Group</h1>
+    <!-- description explaining how to join a group -->
+    <div class="card">
+        <div class="card-body">
+            <div class="alert alert-info">
+                <h2>How to join a group:</h2>
+                <ol class="mb-0">
+                    <li>Ask a group member for the Group ID</li>
+                    <li>Enter the Group ID below</li>
+                    <li>Write an optional message explaining why you want to join</li>
+                    <li>Submit your request</li>
+                </ol>
+            </div>
+            <div class="alert alert-warning">
+                <ul class="mb-0">
+                    <li><strong>Closed groups</strong> do not allow anyone to join</li>
+                    <li><strong>Open groups</strong> accept requests but still require approval</li>
+                </ul>
+            </div>
+            
+            <form method="POST" action="">
+                {{ form.hidden_tag() }}
+                <fieldset class="form-group">
+                    <!-- input field for group ID -->
+                    <div class="form-group mb-3">
+                        {{ form.group_id.label(class="form-control-label") }}
+                        <small class="form-text text-muted">Enter the numeric Group ID (e.g., 1, 2, 3)</small>
+                        {% if form.group_id.errors %}
+                            {{ form.group_id(class="form-control form-control-lg is-invalid") }}
+                            <div class="invalid-feedback">
+                                {% for error in form.group_id.errors %}
+                                    <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            {{ form.group_id(class="form-control form-control-lg") }}
+                        {% endif %}
+                    </div>
+                    <!-- input field for join request message -->
+                    <div class="form-group mb-3">
+                        {{ form.message.label(class="form-control-label") }}
+                        <small class="form-text text-muted">Optional: Tell the group why you want to join</small>
+                        {% if form.message.errors %}
+                            {{ form.message(class="form-control form-control-lg is-invalid") }}
+                            <div class="invalid-feedback">
+                                {% for error in form.message.errors %}
+                                    <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            {{ form.message(class="form-control form-control-lg") }}
+                        {% endif %}
+                    </div>
+                </fieldset>
+                <!-- submit and cancel buttons -->
+                <div class="form-group">
+                    {{ form.submit(class="btn btn-primary") }}
+                    <a href="{{ url_for('groups') }}" class="btn btn-outline-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+

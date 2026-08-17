@@ -1,0 +1,92 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="content-section">
+    <!-- display simple group information-->
+    <div class="d-flex justify-content-between align-items-start mb-4">
+        <div class="flex-grow-1 me-4">
+            <h1>{{ group.name }}</h1>
+            <p class="text-muted mb-2">{{ group.description or 'No description' }}</p>
+        </div>
+        <div class="col-md-3">
+            <!-- display group information -->
+            <div class="card text-center">
+                <div class="d-flex flex-column gap-1">
+                    <h2 class="card-title">Group Information</h2>
+                    <h4 class="card-title">Currency: {{ group.currency }}</h4>
+                    <h4 class="card-title">Your role: {{ member.role.title() }}</h4>
+                    <h4 class="card-title">Group ID: {{ group.id }}</h4>
+                    {% if group.is_open %}
+                        <h4 class="card-title">Open Group</h4>
+                    {% else %}
+                        <h4 class="card-title">Closed Group</h4>
+                    {% endif %}
+                    <h4 class="card-title">Active Members</h4>
+                    <h4 class="text-info">{{ group.members|selectattr('is_active', 'equalto', true)|list|length }}</h4>
+                    <h4 class="card-title">Goals</h4>
+                    <h4 class="text-info">{{ group.goals|length }}</h4>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mb-4">
+        <!-- displays group balance -->
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h2 class="card-title">Balance</h2>
+                    <h3 class="text-success">{{ group.currency }} {{ '%.2f'|format(group.balance) }}</h3>
+                    <!-- displays group analytics -->
+                    <h3>Analytics</h3>
+                    <div class="analytics-container">
+                        <div class="small text-muted">Current Rate: {% if rate %} ${{ '%.2f'|format(rate) }} / day {% else %} Not enough data {% endif %}</div>
+                        <div class="small text-muted mt-2">Estimated date of completion for all active goals: {{ eta or 'Cannot generate ETA' }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    
+    <!-- cumulative savings graph -->
+    {% if group_savings_graph %}
+        <div class="card mb-4">
+            <h3>Savings Trend</h3>
+            <div class="card-body">
+                <img src="{{ url_for('group_savings_graph', group_id=group.id) }}" alt="Group Savings Graph" style="max-width: 100%; height: auto;">
+            </div>
+        </div>
+    {% else %}
+        <div class="card mb-4">
+            <h3>Savings Trend</h3>
+            <div class="card-body">
+                <div class="text-muted text-center">Not enough data to generate savings trend graph.</div>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- daily trend graph -->
+    {% if group_daily_graph %}
+        <div class="card mb-4">
+            <h3>Daily Trend</h3>
+            <div class="card-body">
+                <img src="{{ url_for('group_daily_graph', group_id=group.id) }}" alt="Group Daily Graph" style="max-width: 100%; height: auto;">
+            </div>
+        </div>
+    {% else %}
+        <div class="card mb-4">
+            <h3>Daily Trend</h3>
+            <div class="card-body">
+                <div class="text-muted text-center">Not enough data to generate daily trend graph.</div>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- leave group button -->
+    <div class="text-center">
+        <form method="POST" action="{{ url_for('leave_group', group_id=group.id) }}" style="display: inline;">
+            <button type="submit" class="btn btn-outline-danger" onclick="return confirm('Are you sure you want to leave this group?')">
+                Leave Group
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,14 @@
+{% extends "layout.html" %}
+{% block content %}
+        {% if current_user.is_authenticated %} <!-- checks if user is logged in -->
+                <h1>Welcome back, {{ current_user.username }}</h1>
+        {% else %}
+                <h1>Welcome to FundFlow</h1>
+                <p>
+                        <a href="{{ url_for('register') }}" class="btn btn-primary">Sign Up</a>
+                        <a href="{{ url_for('login') }}" class="btn btn-outline-primary">Login</a>
+                </p>
+        {% endif %}
+{% endblock %}
+
+

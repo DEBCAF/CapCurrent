@@ -1,0 +1,149 @@
+{% extends "layout.html" %}
+{% block content %}
+    <h1>{{ current_user.username }}'s Dashboard</h1>
+    <!-- displays current user savings -->
+    <div class="card">
+        <h2>{{ current_user.username }}'s Current Savings</h2>
+        <p>${{ '%.2f'|format(current_user.savings or 0) }}</p>
+    </div>
+    
+    <!-- analytics section -->
+    <div class="card">
+        <h3>Analytics</h3>
+        <div>
+            <div>Current Rate: {% if rate %} ${{ '%.2f'|format(rate) }} / day {% else %} Not enough data {% endif %}</div>
+            <div>Estimated date of completion for all active goals: {{ eta or 'Cannot generate ETA' }}</div>
+        </div>
+    </div>
+    
+    <!-- cumulative savings graph -->
+    {% if user_savings_graph %}
+        <div class="card">
+            <h3>Savings Trend</h3>
+            <div class="card">
+                <img src="{{ url_for('user_savings_graph') }}" alt="Cumulative Savings Graph" style="max-width: 100%; height: auto;">
+            </div>
+        </div>
+    {% else %}
+        <div class="card">
+            <h3>Savings Trend</h3>
+            <div class="card">
+                <div>Not enough data to generate savings trend graph.</div>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- daily trend graph -->
+    {% if user_daily_graph %}
+        <div class="card mt-4">
+            <h3>Daily Trend</h3>
+            <div class="card-body">
+                <img src="{{ url_for('user_daily_graph') }}" alt="Daily Graph" style="max-width: 100%; height: auto;">
+            </div>
+        </div>
+    {% else %}
+        <div class="card mt-4">
+            <h3>Daily Trend</h3>
+            <div class="card-body">
+                <div>Not enough data to generate daily trend graph.</div>
+            </div>
+        </div>
+    {% endif %}
+    
+    <!-- form to adjust savings -->
+    <div class="card">
+        <h3>Adjust Savings</h3>
+        <!-- form posts to adjust_savings route so additional page is not required -->
+        <form method="POST" action="{{ url_for('adjust_savings') }}"> 
+            {{ adjust_form.hidden_tag() }}
+            <div class="form-group">
+                {{ adjust_form.operation.label }}
+                {{ adjust_form.operation(class="form-control") }}
+            </div>
+            <div class="form-group">
+                {{ adjust_form.amount.label }}
+                {{ adjust_form.amount(class="form-control") }}
+            </div>
+            <div class="form-group">
+                {{ adjust_form.description.label }}
+                {{ adjust_form.description(class="form-control") }}
+            </div>
+            <button type="submit" class="btn">Adjust Savings</button>
+        </form>
+    </div>
+    <!-- form to set savings balance directly -->
+    <div class="card">
+        <h3>Set Savings Balance</h3>
+        <!-- form posts to update_savings route so additional page is not required -->
+        <form method="POST" action="{{ url_for('update_savings') }}">
+            {{ savings_form.hidden_tag() }}
+            <div class="form-group">
+                {{ savings_form.savings.label }}
+                {{ savings_form.savings(class="form-control") }}
+            </div>
+            {{ savings_form.submit(class="btn") }}
+        </form>
+    </div>
+    
+    <!-- Savings History Section -->
+    <div class="card">
+        <h3>Savings History</h3>
+        <div>
+            {% if savings_history.items %}
+                <div class="table">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Date Time</th>
+                                <th>Change Amount</th>
+                                <th>Type</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for change in savings_history.items %}
+                                <tr>
+                                    <td>{{ change.date_time.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                                    <td>
+                                        {% if change.amount > 0 %}
+                                            <span>$+{{ '%.2f'|format(change.amount) }}</span>
+                                        {% elif change.amount < 0 %}
+                                            <span>${{ '%.2f'|format(change.amount) }}</span>
+                                        {% else %}
+                                            <span>${{ '%.2f'|format(change.amount) }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if change.amount > 0 %}
+                                            <span>Increase</span>
+                                        {% elif change.amount < 0 %}
+                                            <span>Decrease</span>
+                                        {% else %}
+                                            <span>No Change</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <!-- pagination controls -->
+                <div>
+                    {% for page_num in savings_history.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+                        {% if page_num %}
+                            {% if savings_history.page == page_num %}
+                                <a class="btn" href="{{ url_for('dashboard', page=page_num) }}">{{ page_num }}</a>
+                            {% else %}
+                                <a class="btn" href="{{ url_for('dashboard', page=page_num) }}">{{ page_num }}</a>
+                            {% endif %}
+                        {% else %}
+                            <span>&hellip;</span>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p>No savings history yet.</p>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}
+

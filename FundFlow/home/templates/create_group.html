@@ -1,0 +1,70 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="content">
+    <h1>{{ title }}</h1>
+    <div class="card">
+        <div class="card-body">
+            <form method="POST" action="">
+                {{ form.hidden_tag() }}
+                <fieldset class="form-group">
+                    <!-- input field for group name -->
+                    <div class="form-group">
+                        {{ form.name.label(class="form-control-label") }}
+                        {% if form.name.errors %}
+                            {{ form.name(class="form-control form-control-lg is-invalid") }}
+                            <div class="invalid-feedback">
+                                {% for error in form.name.errors %}
+                                    <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            {{ form.name(class="form-control form-control-lg") }}
+                        {% endif %}
+                    </div>
+                    <!-- input field for group description -->
+                    <div class="form-group">
+                        {{ form.description.label(class="form-control-label") }}
+                        {% if form.description.errors %}
+                            {{ form.description(class="form-control form-control-lg is-invalid") }}
+                            <div class="invalid-feedback">
+                                {% for error in form.description.errors %}
+                                    <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            {{ form.description(class="form-control form-control-lg") }}
+                        {% endif %}
+                    </div>
+                    <!-- input field for group currency -->
+                    <div class="form-group">
+                        {{ form.currency.label(class="form-control-label") }}
+                        {% if form.currency.errors %}
+                            {{ form.currency(class="form-control form-control-lg is-invalid") }}
+                            <div class="invalid-feedback">
+                                {% for error in form.currency.errors %}
+                                    <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            {{ form.currency(class="form-control form-control-lg") }}
+                        {% endif %}
+                    </div>
+                    <!-- checkbox selecting open or closed group -->
+                    <div class="form-group">
+                        <div class="form-check">
+                            {{ form.is_open(class="form-check-input") }}
+                            {{ form.is_open.label(class="form-check-label") }}
+                        </div>
+                    </div>
+                </fieldset>
+                <!-- submit and cancel buttons -->
+                <div class="form-group">
+                    {{ form.submit(class="btn") }}
+                    <a {% if group_id %} href="{{ url_for('group_detail', group_id=group_id) }}" {% else %} href="{{ url_for('groups') }}" {% endif %} class="btn">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

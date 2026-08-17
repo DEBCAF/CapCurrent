@@ -1,0 +1,56 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="content-section">
+    <h1 class="mb-4">User Preferences</h1>
+    
+    <form method="POST" action="">
+        {{ form.hidden_tag() }}
+        
+        <div class="mb-3">
+            {{ form.theme.label(class="form-label") }}
+            {{ form.theme(class="form-select") }}
+            {% if form.theme.errors %}
+                <div class="text-danger">
+                    {% for error in form.theme.errors %}
+                        <div class="alert alert-danger">{{ error }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+        
+        <div class="mb-3">
+            <div class="form-check">
+                {{ form.notifications_enabled(class="form-check-input") }}
+                {{ form.notifications_enabled.label(class="form-check-label") }}
+            </div>
+            {% if form.notifications_enabled.errors %}
+                <div class="text-danger">
+                    {% for error in form.notifications_enabled.errors %}
+                        <div class="alert alert-danger">{{ error }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="mb-3">
+            <div class="form-check">
+                {{ form.default_currency(class="form-check-input") }}
+                {{ form.default_currency.label(class="form-check-label") }}
+            </div>
+            {% if form.default_currency.errors %}
+                <div class="text-danger">
+                    {% for error in form.default_currency.errors %}
+                        <div class="alert alert-danger">{{ error }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+        
+        <div class="mb-3">
+            {{ form.submit(class="btn btn-primary") }}
+            <a class="btn btn-outline-secondary ml-2" href="{{ url_for('account') }}">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock content %}
+
