@@ -1,5 +1,7 @@
 # FundFlow
 
+A web-based savings and expense tracking application using Flask, with collaborative group savings pools, contribution requests, and predictive algorithmic forecasting to project optimal purchase timelines based on user cash flow.
+
 ## Features
 
 - Track savings and expenses
@@ -18,9 +20,8 @@
 ## Installation
 
 1. Clone the repository
-2. Install dependencies: `pip install -r requirements.txt`
-3. Run the application: `python run.py`
-4. Open browser to `http://localhost:5000`
+2. Run the application: `python run.py`
+3. Open browser to `http://localhost:5000`
 
 ## Usage
 
