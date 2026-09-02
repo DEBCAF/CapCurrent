@@ -13,7 +13,7 @@ A web-based savings and expense tracking application using Flask, with collabora
 ## Technology Stack
 
 - Python Flask framework
-- SQLite database
+- SQLAlchemy database
 - HTML/CSS frontend
 - Bootstrap styling
 
