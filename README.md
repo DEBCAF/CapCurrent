@@ -1,4 +1,4 @@
-# FundFlow
+# CapitalCurrent
 
 A web-based savings and expense tracking application using Flask, with collaborative group savings pools, contribution requests, and predictive algorithmic forecasting to project optimal purchase timelines based on user cash flow.
 
